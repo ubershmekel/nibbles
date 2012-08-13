@@ -34,6 +34,9 @@ import random
 import time
 import turtle
 
+APPLE_SIZE = 20
+
+
 PLAYING = True
 APPLE_LOC = None
 
@@ -66,8 +69,6 @@ screen.onkey(down, 'Down')
 screen.onkey(stop, 'q')
 screen.listen()
 
-snake = [[0,0]]
-
 L, R, B, T = -screen.window_width() // 2, screen.window_width() // 2, -screen.window_height() // 2, screen.window_height() // 2
 
 def main():
@@ -77,16 +78,23 @@ def main():
     while PLAYING:
         tod.forward(2)
         if APPLE_LOC is None:
-            x = random.randint(L, R)
-            y = random.randint(B, T)
+            x = random.randint(L + APPLE_SIZE, R - APPLE_SIZE)
+            y = random.randint(B + APPLE_SIZE, T - APPLE_SIZE)
             APPLE_LOC = x, y
-            cv.create_rectangle((x, y, x + 20, y + 20), fill="red")
+            cv.create_rectangle((x, y, x + APPLE_SIZE, y + APPLE_SIZE), fill="red")
+            x = x
+            y = -y
         
-        if (L < tod.xcor() < R) and (B < tod.ycor() < T):
+        todx, tody = tod.xcor(), tod.ycor()
+        if (L < todx < R) and (B < tody < T):
             pass
         else:
             print 'out of bounds'
             PLAYING = False
-    
+        
+        if x < todx < x + APPLE_SIZE and y - APPLE_SIZE < tody < y:
+            print 'got the apple'
+        #print todx, tody, x, y
+        #print x/screen.xscale, y/screen.yscale, todx, tody
 
 main()
