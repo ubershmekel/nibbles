@@ -13,23 +13,15 @@ import time
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_COLS, GRID_ROWS = 20, 20
 FPS = 30
-
 CELL_SIZE_X = SCREEN_WIDTH / GRID_COLS
 CELL_SIZE_Y = SCREEN_HEIGHT / GRID_ROWS
 UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
+SNAKE_INIT_SIZE = 3
 PLAYING = True
-APPLE_LOC = None
 
 def stop(event):
     global PLAYING
     PLAYING = False
-
-class Rect:
-    def __init__(self, x, y, size, color, canvas):
-        self.x = x
-        self.y = y
-        self.size = size
-        self.color = color
 
 def b2x(x):
     return x * CELL_SIZE_X
@@ -53,14 +45,17 @@ class Snake:
     def __init__(self, game):
         self.game = game
         self.rects = []
-        for i in range(3):
+        for i in range(SNAKE_INIT_SIZE):
             x = i
             y = 0
-            r = Rect(game.canvas, x, y, fill="blue")
+            r = self.create_body(x, y)
             self.rects.append(r)
         self.direction = RIGHT
         self.bind_keys()
-        self.score = 0
+        self.score = SNAKE_INIT_SIZE
+
+    def create_body(self, x, y):
+        return Rect(self.game.canvas, x, y, fill="#dddd00")
 
     def up(self, event):
         self.direction = UP
@@ -83,6 +78,9 @@ class Snake:
 
     def update(self):
         tail = self.rects.pop(0)
+        if self.score > len(self.rects):
+            r = self.create_body(tail.x, tail.y)
+            self.rects.insert(0, r)
         head = self.rects[-1]
         x, y = head.x, head.y
         # modulo to wrap
@@ -112,7 +110,7 @@ class Game:
         self.root.minsize(320, 240)
         #self.root.pack_propagate(0)
 
-        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0)
+        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg="#F7F7F7")
         self.canvas.pack(fill=Tkinter.BOTH, expand=1)
         
         self.width = SCREEN_WIDTH
