@@ -20,6 +20,10 @@ OPPOSITE = {UP:DOWN, LEFT:RIGHT, DOWN:UP, RIGHT:LEFT}
 SNAKE_INIT_SIZE = 3
 PLAYER1_KEYS = "Up", "Down", "Left", "Right"
 PLAYER2_KEYS = "w", "s", "a", "d"
+PLAYER1_COLOR = "#dddd00"
+PLAYER2_COLOR = "#00aa22"
+BG_COLOR = "#e7e7e7"
+SCORE_BG_COLOR = "#2a2a2a"
 QUIT_KEY = "Escape"
 PLAYING = True
 
@@ -54,7 +58,7 @@ class Sprite:
             rect.redraw()
 
 class Snake(Sprite):
-    def __init__(self, game, keys, initx=0, inity=0, color="#eeee00"):
+    def __init__(self, game, keys, initx=0, inity=0, color=PLAYER1_COLOR):
         self.game = game
         self.rects = []
         self.color = color
@@ -120,9 +124,11 @@ class Snake(Sprite):
             self.score += 1
             self.size += 1
             self.game.apple.relocate()
+            self.game.update_score()
         
         if (x, y) in self.game.causes_of_death:
             self.die()
+            self.game.update_score()
     
     def create_joint(self, x, y):
         return Rect(self.game.canvas, x, y, fill=self.color)
@@ -141,6 +147,9 @@ class Snake(Sprite):
         self.size = SNAKE_INIT_SIZE
         self.init_body()
         print 'ouch!'
+    
+    def score_str(self):
+        return "Apples: %d  Deaths: %d" % (self.score, self.deaths)
         
 class Apple(Sprite):
     def __init__(self, game):
@@ -164,29 +173,43 @@ class Game:
         self.root.title("Nibbles")
         self.root.minsize(320, 240)
 
-        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg="#F7F7F7")
+        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
         self.canvas.pack(fill=Tkinter.BOTH, expand=1)
-        self.root.bind( '<Configure>', self.resize)
+        self.score1_svar = Tkinter.StringVar()
+        l = Tkinter.Label(self.root, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
+        l.pack(side=Tkinter.LEFT)
+        self.label1 = l
+        self.score2_svar = Tkinter.StringVar()
+        l = Tkinter.Label(self.root, textvariable=self.score2_svar, fg=PLAYER2_COLOR, bg=SCORE_BG_COLOR)
+        l.pack(side=Tkinter.RIGHT)
+        self.label2 = l
+        self.root.bind('<Configure>', self.resize)
         self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
         
         # Set focus on canvas in order to collect key-events
         self.canvas.focus_force()
 
         self.snake1 = Snake(self, PLAYER1_KEYS)
-        self.snake2 = Snake(self, PLAYER2_KEYS, inity=GRID_ROWS - 1, color="#dd0044")
+        self.snake2 = Snake(self, PLAYER2_KEYS, inity=GRID_ROWS - 1, color=PLAYER2_COLOR)
         self.apple = Apple(self)
         
         self.sprites = [self.apple, self.snake1, self.snake2]
+        self.update_score()
+    
+    def update_score(self):
+        self.score1_svar.set(self.snake1.score_str())
+        self.score2_svar.set(self.snake2.score_str())
     
     def resize(self, event):
         """
         Handle resize events so that the drawn objects adapts to the window size.
         """
         global CELL_SIZE_X, CELL_SIZE_Y
-        CELL_SIZE_X = round(event.width * 1.0 / GRID_COLS)
-        CELL_SIZE_Y = round(event.height * 1.0 / GRID_ROWS)
-        for sprite in self.sprites:
-            sprite.redraw()
+        if event.widget == self.canvas:
+            CELL_SIZE_X = round(event.width * 1.0 / GRID_COLS)
+            CELL_SIZE_Y = round(event.height * 1.0 / GRID_ROWS)
+            for sprite in self.sprites:
+                sprite.redraw()
     
     def update(self):
         self.causes_of_death = set([(r.x, r.y) for r in self.snake1.rects] + [(r.x, r.y) for r in self.snake2.rects])
@@ -201,6 +224,7 @@ class Game:
             self.canvas.after(int(1000.0 / FPS), self.update)
         else:
             print('Game Over')
+            print('Player1 %d, Player2 %d' % (self.snake1.score - self.snake1.deaths, self.snake2.score - self.snake2.deaths))
             exit()
     
     def start(self):
