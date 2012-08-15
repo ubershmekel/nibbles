@@ -12,7 +12,7 @@ import time
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_COLS, GRID_ROWS = 32, 24
-FPS = 20
+FPS = 15
 CELL_SIZE_X = SCREEN_WIDTH / GRID_COLS
 CELL_SIZE_Y = SCREEN_HEIGHT / GRID_ROWS
 UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
@@ -54,13 +54,12 @@ class Sprite:
             rect.redraw()
 
 class Snake(Sprite):
-    def __init__(self, game, keys, x=0, y=0):
+    def __init__(self, game, keys, x=0, y=0, color="#eeee00"):
         self.game = game
         self.rects = []
+        self.color = color
         for i in range(SNAKE_INIT_SIZE):
-            x = x + i
-            y = y
-            r = self.create_body(x, y)
+            r = self.create_body(x + i, y)
             self.rects.append(r)
         self.direction = RIGHT
         self.bind_keys(keys)
@@ -68,7 +67,7 @@ class Snake(Sprite):
         self.just_turned = False
 
     def create_body(self, x, y):
-        return Rect(self.game.canvas, x, y, fill="#dddd00")
+        return Rect(self.game.canvas, x, y, fill=self.color)
 
     def bad_direction(self, new_direction):
         if OPPOSITE[self.direction] == new_direction or self.just_turned:
@@ -153,7 +152,7 @@ class Game:
         self.canvas.focus_force()
 
         self.snake1 = Snake(self, PLAYER1_KEYS)
-        self.snake2 = Snake(self, PLAYER2_KEYS, y=GRID_ROWS - 1)
+        self.snake2 = Snake(self, PLAYER2_KEYS, y=GRID_ROWS - 1, color="#dd0044")
         self.apple = Apple(self)
         
         self.sprites = [self.apple, self.snake1, self.snake2]
