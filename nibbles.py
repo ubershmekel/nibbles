@@ -116,6 +116,9 @@ class Apple(Sprite):
     def relocate(self):
         self.x, self.y = self.random_location()
         self.rects[0].moveto(self.x, self.y)
+    
+    def update(self):
+        pass
 
 class Game:
     def __init__(self):
@@ -128,9 +131,6 @@ class Game:
         self.root.bind( '<Configure>', self.resize)
         self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
         
-        self.width = SCREEN_WIDTH
-        self.height = SCREEN_HEIGHT
-        
         # Set focus on canvas in order to collect key-events
         self.canvas.focus_force()
 
@@ -138,25 +138,23 @@ class Game:
         self.snake2 = Snake(self, PLAYER2_KEYS, y=GRID_ROWS - 1)
         self.apple = Apple(self)
         
-        self.to_update = [self.snake1, self.snake2, self.canvas]
+        self.sprites = [self.apple, self.snake1, self.snake2]
     
     def resize(self, event):
         """
         Handle resize events so that the drawn objects adapts to the window size.
         """
         global CELL_SIZE_X, CELL_SIZE_Y
-        CELL_SIZE_X = round(self.canvas.winfo_width() * 1.0 / GRID_COLS)
-        CELL_SIZE_Y = round(self.canvas.winfo_height() * 1.0 / GRID_ROWS)
-        x_scale = event.width * 1.0 / self.width
-        y_scale = event.height * 1.0 / self.height
-        self.height = event.height
-        self.width = event.width
-        self.apple.redraw()
-        self.snake1.redraw()
+        CELL_SIZE_X = round(event.width * 1.0 / GRID_COLS)
+        CELL_SIZE_Y = round(event.height * 1.0 / GRID_ROWS)
+        for sprite in self.sprites:
+            sprite.redraw()
     
     def update(self):
-        for object in self.to_update:
-            object.update()
+        for sprite in self.sprites:
+            sprite.update()
+        
+        self.canvas.update()
         
         # queue a refresh
         if PLAYING:
