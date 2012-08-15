@@ -170,6 +170,7 @@ class Apple(Sprite):
 class Game:
     def __init__(self):
         self.root = Tkinter.Tk()
+        self.root.configure(bg=SCORE_BG_COLOR)
         self.root.title("Nibbles")
         self.root.minsize(320, 240)
 
