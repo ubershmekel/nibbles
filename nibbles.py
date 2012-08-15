@@ -75,6 +75,7 @@ class Snake:
 class Game:
     def __init__(self):
         self.master = Tkinter.Tk()
+        self.master.title("Nibbles")
 
         self.canvas = Tkinter.Canvas(self.master, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
         self.canvas.pack()
@@ -92,11 +93,13 @@ class Game:
             self.canvas.after(int(1000.0 / FPS), self.update)
         else:
             print('Game Over')
-            #exit()
+            exit()
     
-#l = canvas.create_line(0, 0, 200, 100)
-#canvas.create_line(0, 100, 200, 0, fill="red", dash=(4, 4))
-
+    def start(self):
+        self.update()
+        self.master.mainloop()
+     
+    
 game = Game()
-game.update()
+game.start()
 
