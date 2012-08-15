@@ -11,9 +11,11 @@ import time
 
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-FPS = 20.0
+GRID_COLS, GRID_ROWS = 20, 20
+FPS = 30
 
-CELL_SIZE = 20
+CELL_SIZE_X = SCREEN_WIDTH / GRID_COLS
+CELL_SIZE_Y = SCREEN_HEIGHT / GRID_ROWS
 UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
 PLAYING = True
 APPLE_LOC = None
@@ -28,16 +30,33 @@ class Rect:
         self.y = y
         self.size = size
         self.color = color
-        
+
+def b2x(x):
+    return x * CELL_SIZE_X
+
+def b2y(y):
+    return y * CELL_SIZE_Y
+
+class Rect:
+    def __init__(self, canvas, x, y, *args, **kwargs):
+        self.canvas = canvas
+        self.id = canvas.create_rectangle(b2x(x), b2y(y), b2x(x + 1), b2y(y + 1), *args, **kwargs)
+        self.x = x
+        self.y = y
+    
+    def moveto(self, x, y):
+        self.x = x
+        self.y = y
+        self.canvas.coords(self.id, b2x(x), b2y(y), b2x(x + 1), b2y(y + 1))
 
 class Snake:
     def __init__(self, game):
         self.game = game
         self.rects = []
         for i in range(3):
-            x = i * CELL_SIZE
+            x = i
             y = 0
-            r = game.canvas.create_rectangle(x, y, x + CELL_SIZE, y + CELL_SIZE, fill="blue")
+            r = Rect(game.canvas, x, y, fill="blue")
             self.rects.append(r)
         self.direction = RIGHT
         self.bind_keys()
@@ -65,43 +84,61 @@ class Snake:
     def update(self):
         tail = self.rects.pop(0)
         head = self.rects[-1]
-        l, b, r, t = self.game.canvas.coords(head)
-        l += self.direction[0] * CELL_SIZE
-        r += self.direction[0] * CELL_SIZE
-        b += self.direction[1] * CELL_SIZE
-        t += self.direction[1] * CELL_SIZE
-        self.game.canvas.coords(tail, l, b, r, t)
+        x, y = head.x, head.y
+        # modulo to wrap
+        x = (x + self.direction[0]) % GRID_COLS
+        y = (y + self.direction[1]) % GRID_ROWS
+        tail.moveto(x, y)
         self.rects.append(tail)
-        self.x, self.y = round(l), round(b)
+        self.x, self.y = x, y
 
 class Apple:
     def __init__(self, game):
         self.game = game
-        x, y = random.randint(0, 10) * CELL_SIZE, random.randint(0, 10) * CELL_SIZE
-        l, b, r, t = x, y, x + CELL_SIZE, y + CELL_SIZE
-        self.rect = game.canvas.create_rectangle(l, b, r, t, fill="red")
-        self.x, self.y = round(l), round(b)
+        self.x, self.y = self.random_location()
+        self.rect = Rect(game.canvas, self.x, self.y, fill="red")
+
+    def random_location(self):
+        return random.randint(0, GRID_COLS - 1), random.randint(0, GRID_ROWS - 1)
 
     def relocate(self):
-        x, y = random.randint(0, 10) * CELL_SIZE, random.randint(0, 10) * CELL_SIZE
-        l, b, r, t = x, y, x + CELL_SIZE, y + CELL_SIZE
-        self.game.canvas.coords(self.rect, l, b, r, t)
-        self.x, self.y = round(l), round(b)
+        self.x, self.y = self.random_location()
+        self.rect.moveto(self.x, self.y)
 
 class Game:
     def __init__(self):
-        self.master = Tkinter.Tk()
-        self.master.title("Nibbles")
+        self.root = Tkinter.Tk()
+        self.root.title("Nibbles")
+        self.root.minsize(320, 240)
+        #self.root.pack_propagate(0)
 
-        self.canvas = Tkinter.Canvas(self.master, width=SCREEN_WIDTH, height=SCREEN_HEIGHT)
-        self.canvas.pack()
+        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0)
+        self.canvas.pack(fill=Tkinter.BOTH, expand=1)
+        
+        self.width = SCREEN_WIDTH
+        self.height = SCREEN_HEIGHT
         
         # Set focus on canvas in order to collect key-events
         self.canvas.focus_force()
 
         self.snake1 = Snake(self)
         self.apple = Apple(self)
-
+        
+        self.root.bind( '<Configure>', self.resize)
+    
+    def resize(self, event):
+        """
+        Handle resize events so that the drawn objects adapts to the window size.
+        """
+        global CELL_SIZE_X, CELL_SIZE_Y
+        CELL_SIZE_X = round(self.canvas.winfo_width() * 1.0 / GRID_COLS)
+        CELL_SIZE_Y = round(self.canvas.winfo_height() * 1.0 / GRID_ROWS)
+        x_scale = event.width * 1.0 / self.width
+        y_scale = event.height * 1.0 / self.height
+        self.height = event.height
+        self.width = event.width
+        self.canvas.scale(Tkinter.ALL, 0, 0, x_scale, y_scale)
+    
     def update(self):
         self.snake1.update()
         self.canvas.update()
@@ -119,7 +156,7 @@ class Game:
     
     def start(self):
         self.update()
-        self.master.mainloop()
+        self.root.mainloop()
      
     
 game = Game()
