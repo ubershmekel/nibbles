@@ -54,20 +54,19 @@ class Sprite:
             rect.redraw()
 
 class Snake(Sprite):
-    def __init__(self, game, keys, x=0, y=0, color="#eeee00"):
+    def __init__(self, game, keys, initx=0, inity=0, color="#eeee00"):
         self.game = game
         self.rects = []
         self.color = color
-        for i in range(SNAKE_INIT_SIZE):
-            r = self.create_body(x + i, y)
-            self.rects.append(r)
+        self.score = 0
+        self.deaths = 0 
+        self.initx = initx
+        self.inity = inity
+        self.size = SNAKE_INIT_SIZE
+        self.init_body()
         self.direction = RIGHT
         self.bind_keys(keys)
-        self.score = SNAKE_INIT_SIZE
         self.just_turned = False
-
-    def create_body(self, x, y):
-        return Rect(self.game.canvas, x, y, fill=self.color)
 
     def bad_direction(self, new_direction):
         if OPPOSITE[self.direction] == new_direction or self.just_turned:
@@ -105,8 +104,8 @@ class Snake(Sprite):
     def update(self):
         self.just_turned = False
         tail = self.rects.pop(0)
-        if self.score > len(self.rects):
-            r = self.create_body(tail.x, tail.y)
+        if self.size > len(self.rects):
+            r = self.create_joint(tail.x, tail.y)
             self.rects.insert(0, r)
         head = self.rects[-1]
         x, y = head.x, head.y
@@ -119,8 +118,30 @@ class Snake(Sprite):
 
         if self.x == self.game.apple.x and self.y == self.game.apple.y:
             self.score += 1
+            self.size += 1
             self.game.apple.relocate()
-
+        
+        if (x, y) in self.game.causes_of_death:
+            self.die()
+    
+    def create_joint(self, x, y):
+        return Rect(self.game.canvas, x, y, fill=self.color)
+    
+    def init_body(self):
+        for r in self.rects:
+            self.game.canvas.delete(r.id)
+            self.rects = []
+        for i in range(self.size):
+            r = self.create_joint(self.initx + i, self.inity)
+            self.rects.append(r)
+    
+    def die(self):
+        self.deaths += 1
+        self.direction = RIGHT
+        self.size = SNAKE_INIT_SIZE
+        self.init_body()
+        print 'ouch!'
+        
 class Apple(Sprite):
     def __init__(self, game):
         self.game = game
@@ -152,7 +173,7 @@ class Game:
         self.canvas.focus_force()
 
         self.snake1 = Snake(self, PLAYER1_KEYS)
-        self.snake2 = Snake(self, PLAYER2_KEYS, y=GRID_ROWS - 1, color="#dd0044")
+        self.snake2 = Snake(self, PLAYER2_KEYS, inity=GRID_ROWS - 1, color="#dd0044")
         self.apple = Apple(self)
         
         self.sprites = [self.apple, self.snake1, self.snake2]
@@ -168,6 +189,8 @@ class Game:
             sprite.redraw()
     
     def update(self):
+        self.causes_of_death = set([(r.x, r.y) for r in self.snake1.rects] + [(r.x, r.y) for r in self.snake2.rects])
+        
         for sprite in self.sprites:
             sprite.update()
         
