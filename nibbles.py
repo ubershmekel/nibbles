@@ -39,9 +39,17 @@ class Rect:
     def moveto(self, x, y):
         self.x = x
         self.y = y
-        self.canvas.coords(self.id, b2x(x), b2y(y), b2x(x + 1), b2y(y + 1))
+        self.redraw()
+    
+    def redraw(self):
+        self.canvas.coords(self.id, b2x(self.x), b2y(self.y), b2x(self.x + 1), b2y(self.y + 1))
 
-class Snake:
+class Sprite:
+    def redraw(self):
+        for rect in self.rects:
+            rect.redraw()
+
+class Snake(Sprite):
     def __init__(self, game):
         self.game = game
         self.rects = []
@@ -90,18 +98,18 @@ class Snake:
         self.rects.append(tail)
         self.x, self.y = x, y
 
-class Apple:
+class Apple(Sprite):
     def __init__(self, game):
         self.game = game
         self.x, self.y = self.random_location()
-        self.rect = Rect(game.canvas, self.x, self.y, fill="red")
+        self.rects = [Rect(game.canvas, self.x, self.y, fill="red")]
 
     def random_location(self):
         return random.randint(0, GRID_COLS - 1), random.randint(0, GRID_ROWS - 1)
 
     def relocate(self):
         self.x, self.y = self.random_location()
-        self.rect.moveto(self.x, self.y)
+        self.rects[0].moveto(self.x, self.y)
 
 class Game:
     def __init__(self):
@@ -133,7 +141,8 @@ class Game:
         y_scale = event.height * 1.0 / self.height
         self.height = event.height
         self.width = event.width
-        self.canvas.scale(Tkinter.ALL, 0, 0, x_scale, y_scale)
+        self.apple.redraw()
+        self.snake1.redraw()
     
     def update(self):
         self.snake1.update()
