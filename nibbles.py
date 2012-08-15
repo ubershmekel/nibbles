@@ -12,11 +12,14 @@ import time
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_COLS, GRID_ROWS = 32, 24
-FPS = 30
+FPS = 20
 CELL_SIZE_X = SCREEN_WIDTH / GRID_COLS
 CELL_SIZE_Y = SCREEN_HEIGHT / GRID_ROWS
 UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
 SNAKE_INIT_SIZE = 3
+PLAYER1_KEYS = "Up", "Down", "Left", "Right"
+PLAYER2_KEYS = "w", "s", "a", "d"
+QUIT_KEY = "Escape"
 PLAYING = True
 
 def stop(event):
@@ -50,16 +53,16 @@ class Sprite:
             rect.redraw()
 
 class Snake(Sprite):
-    def __init__(self, game):
+    def __init__(self, game, keys, x=0, y=0):
         self.game = game
         self.rects = []
         for i in range(SNAKE_INIT_SIZE):
-            x = i
-            y = 0
+            x = x + i
+            y = y
             r = self.create_body(x, y)
             self.rects.append(r)
         self.direction = RIGHT
-        self.bind_keys()
+        self.bind_keys(keys)
         self.score = SNAKE_INIT_SIZE
 
     def create_body(self, x, y):
@@ -77,12 +80,11 @@ class Snake(Sprite):
     def right(self, event):
         self.direction = RIGHT
 
-    def bind_keys(self):
-        self.game.canvas.bind("<KeyRelease-Up>", self.up)
-        self.game.canvas.bind("<KeyRelease-Down>", self.down)
-        self.game.canvas.bind("<KeyRelease-Right>", self.right)
-        self.game.canvas.bind("<KeyRelease-Left>", self.left)
-        self.game.canvas.bind("<KeyRelease-q>", stop)
+    def bind_keys(self, keys):
+        self.game.canvas.bind("<KeyRelease-%s>" % keys[0], self.up)
+        self.game.canvas.bind("<KeyRelease-%s>" % keys[1], self.down)
+        self.game.canvas.bind("<KeyRelease-%s>" % keys[2], self.left)
+        self.game.canvas.bind("<KeyRelease-%s>" % keys[3], self.right)
 
     def update(self):
         tail = self.rects.pop(0)
@@ -97,6 +99,10 @@ class Snake(Sprite):
         tail.moveto(x, y)
         self.rects.append(tail)
         self.x, self.y = x, y
+
+        if self.x == self.game.apple.x and self.y == self.game.apple.y:
+            self.score += 1
+            self.game.apple.relocate()
 
 class Apple(Sprite):
     def __init__(self, game):
@@ -120,6 +126,7 @@ class Game:
         self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg="#F7F7F7")
         self.canvas.pack(fill=Tkinter.BOTH, expand=1)
         self.root.bind( '<Configure>', self.resize)
+        self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
         
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
@@ -127,8 +134,11 @@ class Game:
         # Set focus on canvas in order to collect key-events
         self.canvas.focus_force()
 
-        self.snake1 = Snake(self)
+        self.snake1 = Snake(self, PLAYER1_KEYS)
+        self.snake2 = Snake(self, PLAYER2_KEYS, y=GRID_ROWS - 1)
         self.apple = Apple(self)
+        
+        self.to_update = [self.snake1, self.snake2, self.canvas]
     
     def resize(self, event):
         """
@@ -145,12 +155,8 @@ class Game:
         self.snake1.redraw()
     
     def update(self):
-        self.snake1.update()
-        self.canvas.update()
-        
-        if self.snake1.x == self.apple.x and self.snake1.y == self.apple.y:
-            self.snake1.score += 1
-            self.apple.relocate()
+        for object in self.to_update:
+            object.update()
         
         # queue a refresh
         if PLAYING:
