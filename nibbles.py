@@ -10,10 +10,10 @@ import time
 
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-FPS = 30.0
+FPS = 20.0
 
-UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
 SNAKE_SIZE = 20
+UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
 PLAYING = True
 APPLE_LOC = None
 
@@ -21,11 +21,23 @@ def stop(event):
     global PLAYING
     PLAYING = False
 
+class Rect:
+    def __init__(self, x, y, size, color, canvas):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.color = color
+        
+
 class Snake:
     def __init__(self, game):
         self.game = game
-        x, y = 0, 0
-        self.r = game.canvas.create_rectangle(x, y, x + SNAKE_SIZE, y + SNAKE_SIZE, fill="blue")
+        self.rects = []
+        for i in range(3):
+            x = i * SNAKE_SIZE
+            y = 0
+            r = game.canvas.create_rectangle(x, y, x + SNAKE_SIZE, y + SNAKE_SIZE, fill="blue")
+            self.rects.append(r)
         self.direction = RIGHT
         self.bind_keys()
 
@@ -49,7 +61,15 @@ class Snake:
         self.game.canvas.bind("<KeyRelease-q>", stop)
 
     def update(self):
-        self.game.canvas.move(self.r, self.direction[0], self.direction[1])
+        tail = self.rects.pop(0)
+        head = self.rects[-1]
+        l, b, r, t = self.game.canvas.coords(head)
+        l += self.direction[0] * SNAKE_SIZE
+        r += self.direction[0] * SNAKE_SIZE
+        b += self.direction[1] * SNAKE_SIZE
+        t += self.direction[1] * SNAKE_SIZE
+        self.game.canvas.coords(tail, l, b, r, t)
+        self.rects.append(tail)
 
 
 class Game:
@@ -67,13 +87,16 @@ class Game:
     def update(self):
         self.player1.update()
         self.canvas.update()
+        
+        if PLAYING:
+            self.canvas.after(int(1000.0 / FPS), self.update)
+        else:
+            print('Game Over')
+            #exit()
     
 #l = canvas.create_line(0, 0, 200, 100)
 #canvas.create_line(0, 100, 200, 0, fill="red", dash=(4, 4))
 
 game = Game()
-
-while PLAYING:
-    time.sleep(1.0 / FPS)
-    game.update()
+game.update()
 
