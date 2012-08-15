@@ -16,6 +16,7 @@ FPS = 20
 CELL_SIZE_X = SCREEN_WIDTH / GRID_COLS
 CELL_SIZE_Y = SCREEN_HEIGHT / GRID_ROWS
 UP, DOWN, LEFT, RIGHT = (0, -1), (0, 1), (-1, 0), (1, 0)
+OPPOSITE = {UP:DOWN, LEFT:RIGHT, DOWN:UP, RIGHT:LEFT}
 SNAKE_INIT_SIZE = 3
 PLAYER1_KEYS = "Up", "Down", "Left", "Right"
 PLAYER2_KEYS = "w", "s", "a", "d"
@@ -64,20 +65,36 @@ class Snake(Sprite):
         self.direction = RIGHT
         self.bind_keys(keys)
         self.score = SNAKE_INIT_SIZE
+        self.just_turned = False
 
     def create_body(self, x, y):
         return Rect(self.game.canvas, x, y, fill="#dddd00")
 
+    def bad_direction(self, new_direction):
+        if OPPOSITE[self.direction] == new_direction or self.just_turned:
+            return True
+        else:
+            self.just_turned = True
+            return False
+
     def up(self, event):
+        if self.bad_direction(UP):
+            return
         self.direction = UP
 
     def down(self, event):
+        if self.bad_direction(DOWN):
+            return
         self.direction = DOWN
 
     def left(self, event):
+        if self.bad_direction(LEFT):
+            return
         self.direction = LEFT
 
     def right(self, event):
+        if self.bad_direction(RIGHT):
+            return
         self.direction = RIGHT
 
     def bind_keys(self, keys):
@@ -87,6 +104,7 @@ class Snake(Sprite):
         self.game.canvas.bind("<KeyRelease-%s>" % keys[3], self.right)
 
     def update(self):
+        self.just_turned = False
         tail = self.rects.pop(0)
         if self.score > len(self.rects):
             r = self.create_body(tail.x, tail.y)
