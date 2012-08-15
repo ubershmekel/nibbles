@@ -108,10 +108,10 @@ class Game:
         self.root = Tkinter.Tk()
         self.root.title("Nibbles")
         self.root.minsize(320, 240)
-        #self.root.pack_propagate(0)
 
         self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg="#F7F7F7")
         self.canvas.pack(fill=Tkinter.BOTH, expand=1)
+        self.root.bind( '<Configure>', self.resize)
         
         self.width = SCREEN_WIDTH
         self.height = SCREEN_HEIGHT
@@ -121,8 +121,6 @@ class Game:
 
         self.snake1 = Snake(self)
         self.apple = Apple(self)
-        
-        self.root.bind( '<Configure>', self.resize)
     
     def resize(self, event):
         """
