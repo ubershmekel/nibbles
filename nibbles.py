@@ -170,20 +170,28 @@ class Apple(Sprite):
 class Game:
     def __init__(self):
         self.root = Tkinter.Tk()
-        self.root.configure(bg=SCORE_BG_COLOR)
         self.root.title("Nibbles")
         self.root.minsize(320, 240)
 
-        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
-        self.canvas.pack(fill=Tkinter.BOTH, expand=1)
+        # score board
+        # The frame is needed to bunch the labels in one row. The scoreboard
+        # is packed first as to avoid the canvas hiding it when shrinking
+        # the window.
+        frame = Tkinter.Frame(self.root, bg=SCORE_BG_COLOR)
         self.score1_svar = Tkinter.StringVar()
-        l = Tkinter.Label(self.root, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
-        l.pack(side=Tkinter.LEFT)
+        l = Tkinter.Label(frame, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
+        l.pack(side=Tkinter.LEFT, expand=False)
         self.label1 = l
         self.score2_svar = Tkinter.StringVar()
-        l = Tkinter.Label(self.root, textvariable=self.score2_svar, fg=PLAYER2_COLOR, bg=SCORE_BG_COLOR)
+        l = Tkinter.Label(frame, textvariable=self.score2_svar, fg=PLAYER2_COLOR, bg=SCORE_BG_COLOR)
         l.pack(side=Tkinter.RIGHT)
         self.label2 = l
+        frame.pack(fill=Tkinter.X)
+
+        # play area
+        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
+        self.canvas.pack(fill=Tkinter.BOTH, expand=True)
+
         self.root.bind('<Configure>', self.resize)
         self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
         
