@@ -232,7 +232,7 @@ class Game:
         self.update()
         self.root.mainloop()
      
-    
-game = Game()
-game.start()
+if __name__ == "__main__":    
+    game = Game()
+    game.start()
 
