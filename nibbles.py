@@ -218,8 +218,6 @@ class Game:
         for sprite in self.sprites:
             sprite.update()
         
-        self.canvas.update()
-        
         # queue a refresh
         if PLAYING:
             self.canvas.after(int(1000.0 / FPS), self.update)
