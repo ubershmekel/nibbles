@@ -100,10 +100,10 @@ class Snake(Sprite):
         self.direction = RIGHT
 
     def bind_keys(self, keys):
-        self.game.canvas.bind("<KeyRelease-%s>" % keys[0], self.up)
-        self.game.canvas.bind("<KeyRelease-%s>" % keys[1], self.down)
-        self.game.canvas.bind("<KeyRelease-%s>" % keys[2], self.left)
-        self.game.canvas.bind("<KeyRelease-%s>" % keys[3], self.right)
+        self.game.canvas.bind("<KeyPress-%s>" % keys[0], self.up)
+        self.game.canvas.bind("<KeyPress-%s>" % keys[1], self.down)
+        self.game.canvas.bind("<KeyPress-%s>" % keys[2], self.left)
+        self.game.canvas.bind("<KeyPress-%s>" % keys[3], self.right)
 
     def update(self):
         self.just_turned = False
@@ -137,9 +137,9 @@ class Snake(Sprite):
         for r in self.rects:
             self.game.canvas.delete(r.id)
             self.rects = []
-        for i in range(self.size):
-            r = self.create_joint(self.initx + i, self.inity)
-            self.rects.append(r)
+        
+        r = self.create_joint(self.initx, self.inity)
+        self.rects.append(r)
     
     def die(self):
         self.deaths += 1
