@@ -173,15 +173,15 @@ class Apple(Sprite):
 
 class Game:
     def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("Nibbles")
-        self.root.minsize(320, 240)
+        self.master = tk.Tk()
+        self.master.title("Nibbles")
+        self.master.minsize(320, 240)
 
         # score board
         # The frame is needed to bunch the labels in one row. The scoreboard
         # is packed first as to avoid the canvas hiding it when shrinking
         # the window.
-        frame = tk.Frame(self.root, bg=SCORE_BG_COLOR)
+        frame = tk.Frame(self.master, bg=SCORE_BG_COLOR)
         self.score1_svar = tk.StringVar()
         l = tk.Label(frame, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
         l.pack(side=tk.LEFT, expand=False)
@@ -193,10 +193,10 @@ class Game:
         frame.pack(fill=tk.X)
 
         # play area
-        self.canvas = tk.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
+        self.canvas = tk.Canvas(self.master, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        self.root.bind('<Configure>', self.resize)
+        self.master.bind('<Configure>', self.resize)
         self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
         
         # Set focus on canvas in order to collect key-events
@@ -236,11 +236,11 @@ class Game:
         else:
             print('Game Over')
             print('Player1 %d, Player2 %d' % (self.snake1.score - self.snake1.deaths, self.snake2.score - self.snake2.deaths))
-            self.root.quit()
+            self.master.quit()
     
     def start(self):
         self.update()
-        self.root.mainloop()
+        self.master.mainloop()
      
 if __name__ == "__main__":    
     game = Game()
