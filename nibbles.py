@@ -6,7 +6,10 @@ A tribute to the original QBasic nibbles game in python.
 """
 
 import random
-import Tkinter
+try:
+    import tkinter as tk
+except ImportError:
+    import Tkinter as tk
 import random
 import time
 
@@ -147,7 +150,7 @@ class Snake(Sprite):
         self.direction = RIGHT
         self.size = SNAKE_INIT_SIZE
         self.init_body()
-        print 'ouch!'
+        print('ouch!')
     
     def score_str(self):
         return "Apples: %d  Deaths: %d" % (self.score, self.deaths)
@@ -170,7 +173,7 @@ class Apple(Sprite):
 
 class Game:
     def __init__(self):
-        self.root = Tkinter.Tk()
+        self.root = tk.Tk()
         self.root.title("Nibbles")
         self.root.minsize(320, 240)
 
@@ -178,20 +181,20 @@ class Game:
         # The frame is needed to bunch the labels in one row. The scoreboard
         # is packed first as to avoid the canvas hiding it when shrinking
         # the window.
-        frame = Tkinter.Frame(self.root, bg=SCORE_BG_COLOR)
-        self.score1_svar = Tkinter.StringVar()
-        l = Tkinter.Label(frame, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
-        l.pack(side=Tkinter.LEFT, expand=False)
+        frame = tk.Frame(self.root, bg=SCORE_BG_COLOR)
+        self.score1_svar = tk.StringVar()
+        l = tk.Label(frame, textvariable=self.score1_svar, fg=PLAYER1_COLOR, bg=SCORE_BG_COLOR)
+        l.pack(side=tk.LEFT, expand=False)
         self.label1 = l
-        self.score2_svar = Tkinter.StringVar()
-        l = Tkinter.Label(frame, textvariable=self.score2_svar, fg=PLAYER2_COLOR, bg=SCORE_BG_COLOR)
-        l.pack(side=Tkinter.RIGHT)
+        self.score2_svar = tk.StringVar()
+        l = tk.Label(frame, textvariable=self.score2_svar, fg=PLAYER2_COLOR, bg=SCORE_BG_COLOR)
+        l.pack(side=tk.RIGHT)
         self.label2 = l
-        frame.pack(fill=Tkinter.X)
+        frame.pack(fill=tk.X)
 
         # play area
-        self.canvas = Tkinter.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
-        self.canvas.pack(fill=Tkinter.BOTH, expand=True)
+        self.canvas = tk.Canvas(self.root, width=SCREEN_WIDTH, height=SCREEN_HEIGHT, highlightthickness=0, bg=BG_COLOR)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         self.root.bind('<Configure>', self.resize)
         self.canvas.bind("<KeyRelease-%s>" % QUIT_KEY, stop)
