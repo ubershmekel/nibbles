@@ -236,7 +236,7 @@ class Game:
         else:
             print('Game Over')
             print('Player1 %d, Player2 %d' % (self.snake1.score - self.snake1.deaths, self.snake2.score - self.snake2.deaths))
-            exit()
+            self.root.quit()
     
     def start(self):
         self.update()
