@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 nibbles.py
 
