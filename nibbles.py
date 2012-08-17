@@ -234,8 +234,15 @@ class Game:
         if PLAYING:
             self.canvas.after(int(1000.0 / FPS), self.update)
         else:
-            print('Game Over')
-            print('Player1 %d, Player2 %d' % (self.snake1.score - self.snake1.deaths, self.snake2.score - self.snake2.deaths))
+            total1 = self.snake1.score - self.snake1.deaths
+            total2 = self.snake2.score - self.snake2.deaths
+            print('Player1 %d, Player2 %d' % (total1, total2))
+            if total1 == total2:
+                print("It's a tie")
+            elif total1 > total2:
+                print("Player 1 wins")
+            else:
+                print("Player 2 wins")
             self.master.quit()
     
     def start(self):
@@ -245,4 +252,3 @@ class Game:
 if __name__ == "__main__":    
     game = Game()
     game.start()
-
